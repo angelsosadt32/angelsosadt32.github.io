@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25N | Día Internacional de la Eliminación de la Violencia contra la Mujer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            lavender: '#E6E6FA',
+                            violetSoft: '#D8BFD8',
+                            pinkSoft: '#FADADD',
+                            cream: '#FDFBF7',
+                            purpleDark: '#4A3B5C',
+                            purpleMain: '#8A6F9E',
+                            purpleLight: '#F3EBF6',
+                            roseSoft: '#FFE4E6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet.js CSS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #4A3B5C;
+            overflow-x: hidden;
+        }
+
+        .font-serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Ambient Glow & Floating Animations */
+        .glow-bg {
+            background: radial-gradient(circle at 50% 20%, rgba(230, 230, 250, 0.6) 0%, rgba(250, 218, 221, 0.4) 50%, rgba(253, 251, 247, 0) 100%);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+
+        .animate-float {
+            animation: float 5s ease-in-out infinite;
+        }
+
+        /* Scroll Reveal Utility Classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Glassmorphism card style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(216, 191, 216, 0.5);
+        }
+
+        .glass-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 25px -5px rgba(138, 111, 158, 0.15);
+            border-color: rgba(138, 111, 158, 0.6);
+        }
+
+        /* Estilos emergentes del mapa */
+        .custom-popup .leaflet-popup-content-wrapper {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+        }
+        .custom-popup .leaflet-popup-tip {
+            background: #ffffff;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FDFBF7;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8BFD8;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A6F9E;
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <!-- 1. Navbar Responsiva -->
+    <nav class="fixed top-0 left-0 w-full z-40 bg-pastel-cream/80 backdrop-blur-md border-b border-pastel-violetSoft/30 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-full bg-pastel-lavender text-pastel-purpleMain flex items-center justify-center text-sm font-bold shadow-sm">
+                        <i class="fa-solid fa-ribbon"></i>
+                    </span>
+                    <span class="font-serif-title font-bold text-xl text-pastel-purpleDark tracking-wide">25N <span class="text-pastel-purpleMain font-sans text-sm font-normal">| Conciencia & Memoria</span></span>
+                </div>
+                
+                <!-- Desktop Navigation Links -->
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-pastel-purpleDark">
+                    <a href="#importancia" class="hover:text-pastel-purpleMain transition-colors">¿Qué es el 25N?</a>
+                    <a href="#historia" class="hover:text-pastel-purpleMain transition-colors">Historia</a>
+                    <a href="#tipologias" class="hover:text-pastel-purpleMain transition-colors">Tipologías</a>
+                    <a href="#mapa" class="hover:text-pastel-purpleMain transition-colors">Mapa Global</a>
+                    <a href="#visibilidad" class="hover:text-pastel-purpleMain transition-colors">Cómo Visibilizar</a>
+                    <a href="#apoyo" class="hover:text-pastel-purpleMain transition-colors">Sumar Apoyo</a>
+                </div>
+
+                <!-- CTA Button -->
+                <div class="hidden sm:block">
+                    <a href="#apoyo" class="px-4 py-2 rounded-full bg-pastel-pinkSoft text-pastel-purpleDark hover:bg-pastel-violetSoft/40 text-xs font-semibold tracking-wider uppercase transition-all shadow-sm border border-pastel-violetSoft/40">
+                        Sumar Voz
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-pastel-purpleDark hover:text-pastel-purpleMain focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-pastel-cream/95 border-b border-pastel-violetSoft/30 px-4 pt-2 pb-4 space-y-3">
+            <a href="#importancia" class="block text-pastel-purpleDark hover:text-pastel-purpleMain text-sm font-medium py-1">¿Qué es el 25N?</a>
+            <a href="#historia" class="block text-pastel-purpleDark hover:text-pastel-purpleMain text-sm font-medium py-1">Historia</a>
+            <a href="#tipologias" class="block text-pastel-purpleDark hover:text-pastel-purpleMain text-sm font-medium py-1">Tipologías de Violencia</a>
+            <a href="#mapa" class="block text-pastel-purpleDark hover:text-pastel-purpleMain text-sm font-medium py-1">Mapa Global</a>
+            <a href="#visibilidad" class="block text-pastel-purpleDark hover:text-pastel-purpleMain text-sm font-medium py-1">Propuestas de Visibilidad</a>
+            <a href="#apoyo" class="block text-pastel-purpleDark hover:text-pastel-purpleMain text-sm font-medium py-1">Sumar Apoyo</a>
+        </div>
+    </nav>
+
+    <!-- 2. Hero Header -->
+    <header class="relative pt-32 pb-20 md:pt-40 md:pb-32 glow-bg overflow-hidden min-h-[85vh] flex items-center justify-center">
+        <!-- Floating Decorative Element (SVG) -->
+        <div class="absolute top-24 left-[10%] text-pastel-violetSoft/40 animate-float pointer-events-none">
+            <svg class="w-16 h-16 fill-current" viewBox="0 0 24 24">
+                <path d="M12,2C12,2 10.5,6.5 7,8C3.5,9.5 2,12 2,14.5C2,17 4,19 6.5,19C9,19 11,17 12,15.5C13,17 15,19 17.5,19C20,19 22,17 22,14.5C22,12 20.5,9.5 17,8C13.5,6.5 12,2 12,2Z"/>
+            </svg>
+        </div>
+        <div class="absolute bottom-16 right-[12%] text-pastel-pinkSoft/60 animate-float pointer-events-none" style="animation-delay: 2s;">
+            <svg class="w-20 h-20 fill-current" viewBox="0 0 24 24">
+                <path d="M12,2C12,2 10.5,6.5 7,8C3.5,9.5 2,12 2,14.5C2,17 4,19 6.5,19C9,19 11,17 12,15.5C13,17 15,19 17.5,19C20,19 22,17 22,14.5C22,12 20.5,9.5 17,8C13.5,6.5 12,2 12,2Z"/>
+            </svg>
+        </div>
+
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-pastel-violetSoft/40 text-pastel-purpleDark text-xs sm:text-sm font-medium shadow-sm mb-6">
+                <i class="fa-solid fa-hand-holding-heart text-pastel-purpleMain"></i>
+                <span>Día Internacional de la Eliminación de la Violencia contra la Mujer</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="font-serif-title text-4xl sm:text-6xl md:text-7xl font-bold text-pastel-purpleDark leading-tight tracking-tight mb-6">
+                25N: Memoria, Dignidad y <span class="italic text-pastel-purpleMain">Justicia Social</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="text-base sm:text-lg md:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-10 font-normal">
+                Visibilizar no es solo recordar; es nombrar las violencias, honrar las memorias, educar para el cambio y transformar nuestra indiferencia en un compromiso activo.
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#importancia" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-pastel-purpleMain hover:bg-pastel-purpleDark text-white font-medium shadow-md transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <span>Comprender el 25N</span>
+                    <i class="fa-solid fa-arrow-down text-sm"></i>
+                </a>
+                <a href="#apoyo" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white hover:bg-pastel-purpleLight text-pastel-purpleDark font-medium border border-pastel-violetSoft/50 shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-heart text-pastel-purpleMain"></i>
+                    <span>Sumar tu apoyo</span>
+                </a>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="mt-16 flex flex-col items-center justify-center text-pastel-purpleMain/70 text-xs gap-2">
+                <span>Desliza para explorar</span>
+                <i class="fa-solid fa-chevron-down animate-bounce text-pastel-purpleMain"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 3. Sección de Importancia con la primera imagen exacta y estadísticas -->
+    <section id="importancia" class="py-20 relative">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-pastel-purpleMain mb-2">Conciencia e Impacto</h2>
+                <p class="font-serif-title text-3xl sm:text-4xl font-bold text-pastel-purpleDark">¿Qué representa el 25N y por qué nos involucra?</p>
+                <div class="w-16 h-1 bg-pastel-purpleMain mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <!-- Informative Text & First Exact Image -->
+                <div class="space-y-6 reveal">
+                    <div class="p-6 rounded-2xl glass-card border border-pastel-violetSoft/30">
+                        <h3 class="font-serif-title text-xl font-semibold text-pastel-purpleDark mb-3 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-pastel-purpleLight text-pastel-purpleMain flex items-center justify-center text-sm font-bold">01</span>
+                            Una Problemática Estructural
+                        </h3>
+                        <p class="text-gray-700 leading-relaxed text-sm mb-4">
+                            El 25 de noviembre no es una fecha festiva; es una jornada global de denuncia contra las manifestaciones de violencia que sufren las mujeres y niñas en todo el mundo. La violencia de género es una vulneración sistemática de los derechos humanos arraigada en desigualdades históricas.
+                        </p>
+                        <!-- Primera imagen exacta solicitada -->
+                        <div class="rounded-xl overflow-hidden border border-pastel-violetSoft/30">
+                            <img src="https://www.laizquierdadiario.cl/IMG/arton17618.jpg" alt="Manifestación Women's Liberation" class="w-full h-48 object-cover">
+                            <span class="block px-3 py-1 bg-white text-[10px] text-gray-400 border-t border-slate-100">Imagen 1: Fotografía histórica de protesta social (Women's Liberation).</span>
+                        </div>
+                    </div>
+
+                    <div class="p-6 rounded-2xl glass-card border border-pastel-violetSoft/30">
+                        <h3 class="font-serif-title text-xl font-semibold text-pastel-purpleDark mb-3 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-pastel-pinkSoft text-pastel-purpleDark flex items-center justify-center text-sm font-bold">02</span>
+                            El Peligro de la Indiferencia
+                        </h3>
+                        <p class="text-gray-700 leading-relaxed text-sm">
+                            Guardar silencio o normalizar conductas machistas cotidianas perpetúa las estructuras que justifican agresiones mayores. Visibilizar el 25N nos compromete a desnaturalizar estos patrones, proteger a quienes están en riesgo y exigir justicia eficaz.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Cifras de Concientización Global -->
+                <div class="glass-card p-8 rounded-3xl border border-pastel-violetSoft/30 shadow-sm reveal">
+                    <h3 class="font-serif-title text-2xl font-bold text-pastel-purpleDark mb-4 text-center">La realidad en cifras globales</h3>
+                    <p class="text-xs text-gray-500 text-center mb-8">Estimaciones publicadas por organismos internacionales (ONU Mujeres / OMS)</p>
+
+                    <div class="space-y-6">
+                        <!-- Metric 1 -->
+                        <div class="bg-white/80 p-5 rounded-2xl border border-pastel-violetSoft/20 shadow-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Mujeres afectadas por violencia física/sexual</span>
+                                <span class="text-2xl font-bold text-pastel-purpleMain font-serif-title">1 de cada 3</span>
+                            </div>
+                            <div class="w-full bg-pastel-purpleLight h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-pastel-purpleMain h-full rounded-full" style="width: 33.3%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metric 2 -->
+                        <div class="bg-white/80 p-5 rounded-2xl border border-pastel-violetSoft/20 shadow-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Casos no denunciados por temor o desconfianza</span>
+                                <span class="text-2xl font-bold text-rose-400 font-serif-title">+60%</span>
+                            </div>
+                            <div class="w-full bg-pastel-purpleLight h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-rose-300 h-full rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metric 3 -->
+                        <div class="bg-white/80 p-5 rounded-2xl border border-pastel-violetSoft/20 shadow-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Feminicidios cometidos por entorno cercano</span>
+                                <span class="text-2xl font-bold text-pastel-purpleDark font-serif-title">~55%</span>
+                            </div>
+                            <div class="w-full bg-pastel-purpleLight h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-pastel-purpleDark h-full rounded-full" style="width: 55%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Sección de Historia con línea de tiempo y la segunda imagen exacta representando a Minerva Mirabal -->
+    <section id="historia" class="py-20 bg-pastel-purpleLight/40 relative">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-pastel-purpleMain mb-2">Memoria Histórica</h2>
+                <p class="font-serif-title text-3xl sm:text-4xl font-bold text-pastel-purpleDark">El origen de la lucha del 25N</p>
+                <div class="w-16 h-1 bg-pastel-purpleMain mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            <!-- Interactive Timeline -->
+            <div class="relative wrap overflow-hidden p-2 md:p-6">
+                <div class="border-2-2 absolute border-opacity-30 border-pastel-violetSoft h-full border text-center left-1/2 -ml-0.5 hidden md:block"></div>
+
+                <div class="space-y-8">
+                    <!-- Event 1: 1960 -->
+                    <div class="timeline-item reveal flex flex-col md:flex-row items-center justify-between w-full">
+                        <div class="order-1 md:w-5/12 text-center md:text-right">
+                            <span class="inline-block px-3 py-1 rounded-full bg-pastel-pinkSoft text-pastel-purpleDark text-xs font-bold mb-2">25 Noviembre 1960</span>
+                            <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark">El Asesinato de las Hermanas Mirabal</h3>
+                            <p class="text-gray-700 text-sm mt-2 leading-relaxed">
+                                Patria, Minerva y María Teresa Mirabal, conocidas como <em>"Las Mariposas"</em>, fueron brutalmente asesinadas por la dictadura de Rafael L. Trujillo en República Dominicana debido a su activismo político.
+                            </p>
+                        </div>
+                        <div class="z-20 flex items-center order-1 bg-pastel-purpleMain shadow-md w-10 h-10 rounded-full justify-center my-4 md:my-0 text-white text-sm">
+                            <i class="fa-solid fa-feather-pointed"></i>
+                        </div>
+                        <div class="order-1 md:w-5/12 glass-card p-5 rounded-2xl border border-pastel-violetSoft/30">
+                            <p class="text-xs text-gray-600 italic">
+                                "Si me matan, sacaré los brazos de la tumba y seré más fuerte." 
+                            </p>
+                            <span class="block text-xs font-semibold text-pastel-purpleDark mt-2 mb-3">— Minerva Mirabal</span>
+                            <!-- Segunda imagen exacta solicitada -->
+                            <div class="rounded-lg overflow-hidden border border-slate-100">
+                                <img src="https://eldia.com.do/wp-content/uploads/2017/11/MINERVA-MIRABAL.webp" alt="Retrato histórico de Minerva Mirabal" class="w-full h-48 object-cover">
+                                <span class="block px-2 py-1 bg-white text-[9px] text-gray-400">Imagen 2: Retrato histórico de Minerva Mirabal.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event 2: 1981 -->
+                    <div class="timeline-item reveal flex flex-col md:flex-row-reverse items-center justify-between w-full">
+                        <div class="order-1 md:w-5/12 text-center md:text-left">
+                            <span class="inline-block px-3 py-1 rounded-full bg-pastel-lavender text-pastel-purpleDark text-xs font-bold mb-2">Bogotá, 1981</span>
+                            <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark">Primer Encuentro Feminista Latinoamericano</h3>
+                            <p class="text-gray-700 text-sm mt-2 leading-relaxed">
+                                En Bogotá, Colombia, activistas de toda la región acordaron proclamar el 25 de noviembre como el Día de No Violencia contra la Mujer, rindiendo homenaje al martirio de las hermanas Mirabal.
+                            </p>
+                        </div>
+                        <div class="z-20 flex items-center order-1 bg-pastel-purpleDark shadow-md w-10 h-10 rounded-full justify-center my-4 md:my-0 text-white text-sm">
+                            <i class="fa-solid fa-people-group"></i>
+                        </div>
+                        <div class="order-1 md:w-5/12 glass-card p-5 rounded-2xl border border-pastel-violetSoft/30">
+                            <p class="text-xs text-gray-600">
+                                Supuso la primera gran articulación política en América Latina para situar la violencia machista en la agenda pública global.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Event 3: 1999 -->
+                    <div class="timeline-item reveal flex flex-col md:flex-row items-center justify-between w-full">
+                        <div class="order-1 md:w-5/12 text-center md:text-right">
+                            <span class="inline-block px-3 py-1 rounded-full bg-pastel-pinkSoft text-pastel-purpleDark text-xs font-bold mb-2">17 Diciembre 1999</span>
+                            <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark">Oficialización por la ONU</h3>
+                            <p class="text-gray-700 text-sm mt-2 leading-relaxed">
+                                La Asamblea General de la ONU aprobó la Resolución A/RES/54/134, declarando oficialmente el 25 de noviembre como el Día Internacional de la Eliminación de la Violencia contra la Mujer.
+                            </p>
+                        </div>
+                        <div class="z-20 flex items-center order-1 bg-pastel-purpleMain shadow-md w-10 h-10 rounded-full justify-center my-4 md:my-0 text-white text-sm">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                        <div class="order-1 md:w-5/12 glass-card p-5 rounded-2xl border border-pastel-violetSoft/30">
+                            <p class="text-xs text-gray-600">
+                                La resolución insta a todos los gobiernos, organismos internacionales y ONG a realizar actividades para sensibilizar a la opinión pública.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Sección de tipologías de violencia con modales interactivos -->
+    <section id="tipologias" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-pastel-purpleMain mb-2">Marco Conceptual</h2>
+                <p class="font-serif-title text-3xl sm:text-4xl font-bold text-pastel-purpleDark">Tipologías de la Violencia de Género</p>
+                <p class="text-gray-600 text-sm mt-3">Haz clic en cualquier tarjeta para desplegar la información ampliada de cada dimensión.</p>
+                <div class="w-16 h-1 bg-pastel-purpleMain mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Card 1: Física -->
+                <div onclick="openModal('violencia-fisica')" class="glass-card glass-card-hover rounded-3xl cursor-pointer group relative overflow-hidden reveal flex flex-col justify-between">
+                    <div class="p-6">
+                        <div class="w-12 h-12 rounded-2xl bg-pastel-pinkSoft text-rose-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-hand-fist"></i>
+                        </div>
+                        <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-2">Física y Sexual</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4">
+                            Cualquier acción infligida que cause daño corporal, lesiones, coacción o vulneración de la integridad sexual.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&q=80&w=500" alt="Red de apoyo y protección comunitaria" class="w-full h-36 object-cover">
+                        <div class="p-4 bg-white/50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-pastel-purpleMain">
+                            <span>Ver información &rarr;</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Unsplash</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Psicológica -->
+                <div onclick="openModal('violencia-psicologica')" class="glass-card glass-card-hover rounded-3xl cursor-pointer group relative overflow-hidden reveal flex flex-col justify-between">
+                    <div class="p-6">
+                        <div class="w-12 h-12 rounded-2xl bg-pastel-purpleLight text-pastel-purpleMain flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-2">Psicológica y Emocional</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4">
+                            Hostigamiento, manipulación, chantaje emocional, desvalorización y control de conductas para aislar a la víctima.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1573497491765-dccce02b29df?auto=format&fit=crop&q=80&w=500" alt="Acompañamiento psicológico y salud mental" class="w-full h-36 object-cover">
+                        <div class="p-4 bg-white/50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-pastel-purpleMain">
+                            <span>Ver información &rarr;</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Unsplash</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Económica -->
+                <div onclick="openModal('violencia-economica')" class="glass-card glass-card-hover rounded-3xl cursor-pointer group relative overflow-hidden reveal flex flex-col justify-between">
+                    <div class="p-6">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-2">Económica y Patrimonial</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4">
+                            Control abusivo de recursos financieros, prohibición del desarrollo laboral o sustracción de bienes personales.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&q=80&w=500" alt="Autonomía económica e independencia laboral de las mujeres" class="w-full h-36 object-cover">
+                        <div class="p-4 bg-white/50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-pastel-purpleMain">
+                            <span>Ver información &rarr;</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Unsplash</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Digital -->
+                <div onclick="openModal('violencia-digital')" class="glass-card glass-card-hover rounded-3xl cursor-pointer group relative overflow-hidden reveal flex flex-col justify-between">
+                    <div class="p-6">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-laptop-code"></i>
+                        </div>
+                        <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-2">Digital y Mediática</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4">
+                            Ciberacoso, difusión no consentida de contenido íntimo, espionaje en redes sociales y linchamiento virtual.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=500" alt="Seguridad digital y defensa contra el ciberacoso" class="w-full h-36 object-cover">
+                        <div class="p-4 bg-white/50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-pastel-purpleMain">
+                            <span>Ver información &rarr;</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Unsplash</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Institucional -->
+                <div onclick="openModal('violencia-institucional')" class="glass-card glass-card-hover rounded-3xl cursor-pointer group relative overflow-hidden reveal flex flex-col justify-between">
+                    <div class="p-6">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+                        <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-2">Institucional</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4">
+                            Inacción, revictimización judicial o retardos injustificados cometidos por servidores públicos o entidades estatales.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=500" alt="Acceso a la justicia y garantía de derechos institucionales" class="w-full h-36 object-cover">
+                        <div class="p-4 bg-white/50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-pastel-purpleMain">
+                            <span>Ver información &rarr;</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Unsplash</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Feminicidio -->
+                <div onclick="openModal('violencia-feminicidio')" class="glass-card glass-card-hover rounded-3xl cursor-pointer group relative overflow-hidden reveal flex flex-col justify-between">
+                    <div class="p-6">
+                        <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-2">Feminicidio</h3>
+                        <p class="text-gray-600 text-xs sm:text-sm line-clamp-3 leading-relaxed mb-4">
+                            La forma más extrema e irreversible de la violencia machista: el homicidio de una mujer por razones de género.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&q=80&w=500" alt="Vela encendida en memoria y exigencia de justicia por las víctimas de feminicidio" class="w-full h-36 object-cover">
+                        <div class="p-4 bg-white/50 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-pastel-purpleMain">
+                            <span>Ver información &rarr;</span>
+                            <span class="text-[9px] text-gray-400 font-normal">Unsplash</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Mapa Interactivo con Leaflet.js (10 marcadores: 5 tragedias y 5 avances) -->
+    <section id="mapa" class="py-20 bg-slate-900 text-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 reveal">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-purple-400">Plataforma Global</span>
+                    <h2 class="font-serif-title text-3xl md:text-4xl font-bold mt-1">Mapa Global de Rastreo e Hitos</h2>
+                </div>
+                <div class="flex gap-4 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                        <span>🔴 Tragedias / Casos Impactantes</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                        <span>🔵 Avances / Leyes Landmark</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor del Mapa -->
+            <div class="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-slate-800 z-10">
+                <div id="leafletMap" class="w-full h-full bg-slate-800"></div>
+            </div>
+            <p class="text-xs text-slate-400 text-center">Haz clic o toca cualquiera de los marcadores en el mapa para desplazar la ficha informativa.</p>
+        </div>
+    </section>
+
+    <!-- 7. Propuestas de visibilidad y plan de acción -->
+    <section id="visibilidad" class="py-20 bg-pastel-purpleLight/30 relative">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-pastel-purpleMain mb-2">Plan de Acción & Estrategias</h2>
+                <p class="font-serif-title text-3xl sm:text-4xl font-bold text-pastel-purpleDark">¿Cómo darle mayor visibilidad al 25N?</p>
+                <div class="w-16 h-1 bg-pastel-purpleMain mx-auto mt-4 rounded-full"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Strategy 1 -->
+                <div class="bg-white p-8 rounded-3xl border border-pastel-violetSoft/30 shadow-sm hover:shadow-md transition-shadow reveal">
+                    <div class="w-10 h-10 rounded-full bg-pastel-purpleLight text-pastel-purpleMain flex items-center justify-center font-bold mb-6">
+                        1
+                    </div>
+                    <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-3">Educación & Arte Social</h3>
+                    <ul class="text-gray-700 text-xs sm:text-sm space-y-3 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-pastel-purpleMain mt-1 text-xs"></i>
+                            <span>Murales comunitarios e instalaciones urbanas de concientización.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-pastel-purpleMain mt-1 text-xs"></i>
+                            <span>Talleres escolares sobre resolución no violenta de conflictos y respeto.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-pastel-purpleMain mt-1 text-xs"></i>
+                            <span>Campañas narrativas centradas en historias de resiliencia.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Strategy 2 -->
+                <div class="bg-white p-8 rounded-3xl border border-pastel-violetSoft/30 shadow-sm hover:shadow-md transition-shadow reveal">
+                    <div class="w-10 h-10 rounded-full bg-pastel-pinkSoft text-pastel-purpleDark flex items-center justify-center font-bold mb-6">
+                        2
+                    </div>
+                    <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-3">Involucramiento Masculino</h3>
+                    <ul class="text-gray-700 text-xs sm:text-sm space-y-3 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-rose-400 mt-1 text-xs"></i>
+                            <span>Desarticular complicidades machistas en grupos de chat y círculos sociales.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-rose-400 mt-1 text-xs"></i>
+                            <span>Promover programas de masculinidades corresponsables y empáticas.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-rose-400 mt-1 text-xs"></i>
+                            <span>Asumir una postura activa de no observador frente a vulneraciones.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Strategy 3 -->
+                <div class="bg-white p-8 rounded-3xl border border-pastel-violetSoft/30 shadow-sm hover:shadow-md transition-shadow reveal">
+                    <div class="w-10 h-10 rounded-full bg-pastel-lavender text-pastel-purpleDark flex items-center justify-center font-bold mb-6">
+                        3
+                    </div>
+                    <h3 class="font-serif-title text-xl font-bold text-pastel-purpleDark mb-3">Políticas Públicas</h3>
+                    <ul class="text-gray-700 text-xs sm:text-sm space-y-3 leading-relaxed">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-pastel-purpleDark mt-1 text-xs"></i>
+                            <span>Rendición de cuentas estatal sobre prevención y efectividad de sanciones.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-pastel-purpleDark mt-1 text-xs"></i>
+                            <span>Presupuesto garantizado para refugios de atención e líneas de auxilio.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-pastel-purpleDark mt-1 text-xs"></i>
+                            <span>Capacitación continua con perspectiva de género a operadores de justicia.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. Sección de apoyo interactiva con botón y mensaje de agradecimiento -->
+    <section id="apoyo" class="py-24 px-6 max-w-4xl mx-auto text-center glow-bg">
+        <div class="bg-white p-10 md:p-14 rounded-3xl shadow-sm border border-pastel-violetSoft/30 relative overflow-hidden reveal">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-pastel-pinkSoft/40 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+            
+            <h2 class="font-serif text-3xl md:text-4xl font-bold mb-4 text-pastel-purpleDark">Suma tu Apoyo a la Causa</h2>
+            <p class="text-gray-600 max-w-xl mx-auto mb-8">
+                Solo con leer esta información y presionar el botón de abajo ya estás ayudando a la causa y visibilizando el 25N.
+            </p>
+
+            <div>
+                <button id="support-btn" class="group relative inline-flex items-center gap-3 bg-pastel-purpleMain hover:bg-pastel-purpleDark text-white font-medium text-lg px-10 py-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0">
+                    <i class="fa-solid fa-heart text-pastel-pinkSoft group-hover:scale-125 transition-transform"></i>
+                    <span>¡Dar mi Apoyo al 25N!</span>
+                </button>
+                <div id="support-feedback" class="text-sm font-semibold text-pastel-purpleMain mt-4 opacity-0 transition-opacity duration-300">
+                    ✨ ¡Gracias por tu apoyo! Has sumado tu voz a esta causa.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. Pie de página indicando "hecho por el estudiante Ángel Sosa" -->
+    <footer class="bg-pastel-purpleDark text-pastel-cream py-8 px-6 text-center">
+        <div class="max-w-4xl mx-auto">
+            <p class="text-xs text-pastel-violetSoft/70 font-light">
+                hecho por el estudiante Ángel Sosa para dar visualización al 25 de noviembre
+            </p>
+        </div>
+    </footer>
+
+    <!-- MODAL POPUP INTERACTIVO PARA LAS TIPOLOGÍAS -->
+    <div id="info-modal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white max-w-xl w-full rounded-3xl p-6 sm:p-8 shadow-2xl border border-pastel-violetSoft/40 transform scale-95 transition-transform duration-300 relative">
+            <button onclick="closeModal()" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 w-8 h-8 rounded-full bg-pastel-purpleLight flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT: LÓGICA INTERACTIVA, MAPA Y MODALES -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Modal Data Ampliado para Tipologías
+        const modalData = {
+            'violencia-fisica': {
+                title: 'Violencia Física y Sexual',
+                icon: 'fa-hand-fist',
+                color: 'text-rose-500 bg-pastel-pinkSoft',
+                description: 'La violencia física abarca cualquier acto no consentido ejercido mediante fuerza corporal o objetos que causa daño físico o lesiones. La violencia sexual vulnera la libertad e integridad del cuerpo.',
+                examples: ['Empujones, bofetadas, golpes o agresiones físicas.', 'Coacción, acoso sexual o abuso.', 'Restricción no consentida de la movilidad.'],
+                action: 'Ante cualquier caso de agresión o emergencia, acude a centros de salud locales o comunícate con las líneas de atención a víctimas.'
+            },
+            'violencia-psicologica': {
+                title: 'Violencia Psicológica y Emocional',
+                icon: 'fa-brain',
+                color: 'text-pastel-purpleMain bg-pastel-purpleLight',
+                description: 'Deteriora el bienestar emocional, la autoestima y la estabilidad mental. A menudo es silenciosa pero sumamente destructiva.',
+                examples: ['Manipulación mental y humillaciones continuas.', 'Insultos o desvalorización constante.', 'Aislamiento progresivo de amistades y familia.'],
+                action: 'Reconocer las señales emocionales tempranas ayuda a buscar acompañamiento profesional y redes de apoyo seguras.'
+            },
+            'violencia-economica': {
+                title: 'Violencia Económica y Patrimonial',
+                icon: 'fa-wallet',
+                color: 'text-emerald-600 bg-emerald-50',
+                description: 'Mantiene a la persona en vulnerabilidad y dependencia mediante la privación de dinero o el control abusivo de recursos.',
+                examples: ['Control total de los ingresos personales o familiares.', 'Impedimento o sabotaje para trabajar o estudiar.', 'Sustracción o daño intencional de bienes personales.'],
+                action: 'Promover programas comunitarios e individuales de autonomía e independencia financiera.'
+            },
+            'violencia-digital': {
+                title: 'Violencia Digital y Mediática',
+                icon: 'fa-laptop-code',
+                color: 'text-blue-500 bg-blue-50',
+                description: 'Ejercida mediante redes sociales, mensajes o plataformas virtuales para vulnerar la privacidad o intimidad.',
+                examples: ['Difusión no consentida de contenido íntimo.', 'Ciberacoso o hostigamiento en redes.', 'Espionaje de contraseñas, mensajes o ubicación.'],
+                action: 'Guardar evidencias (capturas de pantalla) y realizar la denuncia ante los departamentos de delitos cibernéticos.'
+            },
+            'violencia-institucional': {
+                title: 'Violencia Institucional',
+                icon: 'fa-building-columns',
+                color: 'text-amber-600 bg-amber-50',
+                description: 'Cometida por funcionarios públicos o entidades estatales que dilatan, retrasan u obstaculizan el acceso a la justicia.',
+                examples: ['Cuestionamiento o desestimación de las denuncias.', 'Retraso injustificado en medidas de protección.', 'Tratos revictimizantes en comisarías o juzgados.'],
+                action: 'Exigir la formación continua obligatoria con perspectiva de género en todos los operadores de justicia.'
+            },
+            'violencia-feminicidio': {
+                title: 'Feminicidio',
+                icon: 'fa-shield-halved',
+                color: 'text-rose-600 bg-rose-100',
+                description: 'La forma más extrema e irreversible de violencia de género: la privación de la vida de una mujer por razones de género.',
+                examples: ['Homicidios cometidos por parejas o exparejas.', 'Crímenes precedidos de violencia o abuso.', 'Inacción institucional previa ante denuncias.'],
+                action: 'Requiere la máxima respuesta penal, medidas urgentes de protección previa y tolerancia cero de la sociedad.'
+            }
+        };
+
+        function openModal(type) {
+            const data = modalData[type];
+            if (!data) return;
+
+            const contentHtml = `
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-2xl ${data.color} flex items-center justify-center text-xl">
+                        <i class="fa-solid ${data.icon}"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif-title text-2xl font-bold text-pastel-purpleDark">${data.title}</h3>
+                        <span class="text-xs text-gray-500">Información detallada</span>
+                    </div>
+                </div>
+                <p class="text-gray-700 text-sm mb-4 leading-relaxed">${data.description}</p>
+                <div class="bg-pastel-cream p-4 rounded-2xl mb-4 border border-pastel-violetSoft/20">
+                    <h4 class="text-xs font-bold text-pastel-purpleDark uppercase mb-2">Manifestaciones comunes:</h4>
+                    <ul class="text-xs text-gray-700 space-y-1.5 list-disc list-inside">
+                        ${data.examples.map(ex => `<li>${ex}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="text-xs text-pastel-purpleDark bg-pastel-purpleLight/60 p-3 rounded-xl border border-pastel-violetSoft/30 font-medium">
+                    <i class="fa-solid fa-shield-halved mr-1 text-pastel-purpleMain"></i> ${data.action}
+                </div>
+            `;
+
+            document.getElementById('modal-content').innerHTML = contentHtml;
+            const modal = document.getElementById('info-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.children[0].classList.remove('scale-95');
+                modal.children[0].classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('info-modal');
+            modal.children[0].classList.remove('scale-100');
+            modal.children[0].classList.add('scale-95');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Acciones del botón de apoyo
+        const supportBtn = document.getElementById("support-btn");
+        const supportFeedback = document.getElementById("support-feedback");
+
+        supportBtn.addEventListener("click", () => {
+            supportBtn.classList.add("scale-95");
+            setTimeout(() => supportBtn.classList.remove("scale-95"), 150);
+            supportFeedback.style.opacity = "1";
+        });
+
+        // Menú adaptable para celulares
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // Animación de aparición al hacer Scroll (Scroll Reveal)
+        const revealElements = document.querySelectorAll('.reveal');
+        function checkScroll() {
+            const triggerBottom = window.innerHeight * 0.85;
+            revealElements.forEach(el => {
+                if (el.getBoundingClientRect().top < triggerBottom) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', checkScroll);
+        window.addEventListener('DOMContentLoaded', checkScroll);
+
+        // Inicialización del Mapa Global con Leaflet.js (10 Marcadores)
+        document.addEventListener("DOMContentLoaded", function() {
+            const mapContainer = document.getElementById('leafletMap');
+            if (!mapContainer) return;
+
+            const map = L.map('leafletMap', {
+                scrollWheelZoom: false
+            }).setView([15, -20], 2);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 500);
+
+            // Iconos Personalizados
+            const redIcon = L.divIcon({
+                className: 'custom-map-icon',
+                html: "<div style='background-color:#EF4444; width:28px; height:28px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; font-size:13px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor:pointer;'>💀</div>",
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            const blueIcon = L.divIcon({
+                className: 'custom-map-icon',
+                html: "<div style='background-color:#3B82F6; width:28px; height:28px; border-radius:50%; border:2px solid white; display:flex; align-items:center; justify-content:center; font-size:13px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor:pointer;'>🛡️</div>",
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            // 5 Puntos Rojos (Tragedias) + 5 Puntos Azules (Avances)
+            const puntos = [
+                // 🔴 TRAGEDIAS / CASOS IMPACTANTES (5 puntos)
+                { lat: 19.4326, lng: -99.1332, icon: redIcon, titulo: "🔴 Ciudad Juárez, México", desc: "Símbolo histórico de la lucha contra el feminicidio sistemático a nivel global." },
+                { lat: 19.4517, lng: -70.6970, icon: redIcon, titulo: "🔴 Salcedo, Rep. Dominicana", desc: "Asesinato de las Hermanas Mirabal (1960), detonante que dio origen al 25N." },
+                { lat: 28.6139, lng: 77.2090, icon: redIcon, titulo: "🔴 Nueva Delhi, India", desc: "Caso Nirbhaya (2012), hecho trágico que impulsó reformas urgentes sobre agresiones sexuales." },
+                { lat: 33.3152, lng: 44.3661, icon: redIcon, titulo: "🔴 Sinjar, Irak", desc: "Crimen contra la comunidad Yazidí (2014) impulsado como táctica sistemática de conflicto." },
+                { lat: -23.5505, lng: -46.6333, icon: redIcon, titulo: "🔴 Río de Janeiro, Brasil", desc: "Feminicidio político de Marielle Franco (2018), defensora de derechos humanos de las mujeres." },
+
+                // 🔵 AVANCES / LEYES HISTÓRICAS (5 puntos)
+                { lat: 4.7110, lng: -74.0721, icon: blueIcon, titulo: "🔵 Bogotá, Colombia", desc: "Ley 1761 (Rosa Elvira Cely) tipifica el feminicidio como delito autónomo con agravantes." },
+                { lat: 40.4168, lng: -3.7038, icon: blueIcon, titulo: "🔵 Madrid, España", desc: "Aprobación de la Ley 'Solo Sí es Sí' para centrar el consentimiento afirmativo." },
+                { lat: -34.6037, lng: -58.3816, icon: blueIcon, titulo: "🔵 Buenos Aires, Argentina", desc: "Movimiento 'Ni Una Menos' e implementación de la Ley Micaela en los poderes del Estado." },
+                { lat: 41.0082, lng: 28.9784, icon: blueIcon, titulo: "🔵 Estambul, Turquía", desc: "Convenio de Estambul (2011), tratado marco del Consejo de Europa en prevención de violencia." },
+                { lat: 59.3293, lng: 18.0686, icon: blueIcon, titulo: "🔵 Estocolmo, Suecia", desc: "Pionera en el modelo de legislación de consentimiento explícito y políticas de equidad." }
+            ];
+
+            puntos.forEach(p => {
+                L.marker([p.lat, p.lng], { icon: p.icon }).addTo(map)
+                    .bindPopup(`<div class="p-1"><h4 class="font-bold text-gray-900 text-sm mb-1">${p.titulo}</h4><p class="text-xs text-gray-600">${p.desc}</p></div>`, { className: 'custom-popup' });
+            });
+        });
+    </script>
+</body>
+</html>
